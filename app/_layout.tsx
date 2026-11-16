@@ -46,6 +46,8 @@ export const unstable_settings = {
 
 void SplashScreen.preventAutoHideAsync();
 void SystemUI.setBackgroundColorAsync("#0E0E0E");
+// Instance Postiz auto-hébergée : pas d'abonnement à vérifier.
+const SKIP_PAYWALL = process.env.EXPO_PUBLIC_SKIP_PAYWALL === "true";
 
 function AuthGate() {
   const router = useRouter();
@@ -75,7 +77,7 @@ function AuthGate() {
     if (status !== "authenticated") return;
     if (!subscriptionLoaded) return;
 
-    const hasAccess = !!subscription;
+    const hasAccess = SKIP_PAYWALL || !!subscription;
 
     if (!hasAccess && !onSubscribeScreen) {
       router.replace("/subscribe-required");
@@ -84,7 +86,14 @@ function AuthGate() {
     if (hasAccess && (inAuthGroup || onSubscribeScreen || onAuthCallback)) {
       router.replace("/(tabs)");
     }
-  }, [status, initializing, segments, router, subscription, subscriptionLoaded]);
+  }, [
+    status,
+    initializing,
+    segments,
+    router,
+    subscription,
+    subscriptionLoaded,
+  ]);
 
   return null;
 }
@@ -116,15 +125,14 @@ export default function RootLayout() {
       ? "(auth)"
       : !subscriptionLoaded
         ? null
-        : !subscription
+        : !subscription && !SKIP_PAYWALL
           ? "subscribe-required"
           : "(tabs)";
 
   // Hold the splash until we're not just ready, but already rendered on
   // the correct screen — otherwise the (auth) initialRoute paints for
   // one frame before AuthGate's effect redirects, flashing the login.
-  const onCorrectScreen =
-    desiredGroup !== null && segments[0] === desiredGroup;
+  const onCorrectScreen = desiredGroup !== null && segments[0] === desiredGroup;
   const ready = loaded && onCorrectScreen;
 
   useEffect(() => {

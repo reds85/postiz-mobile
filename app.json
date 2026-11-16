@@ -5,21 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": [
-      "postiz",
-      "rc-bde96f5f3d"
-    ],
+    "scheme": ["postiz", "rc-bde96f5f3d"],
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.postiz.mob",
       "buildNumber": "5",
       "usesAppleSignIn": true,
       "entitlements": {
-        "com.apple.developer.applesignin": [
-          "Default"
-        ]
+        "com.apple.developer.applesignin": ["Default"]
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -36,8 +30,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "navigationBarColor": "#1A1919"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -85,7 +78,9 @@
         {
           "faceIDPermission": false
         }
-      ]
+      ],
+      "expo-font",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,
