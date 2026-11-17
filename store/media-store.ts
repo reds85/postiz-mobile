@@ -1,7 +1,6 @@
-import { create } from "zustand";
-
 import { apiFetch } from "@/utils/custom-fetch";
-
+import { File as ExpoFile } from "expo-file-system";
+import { create } from "zustand";
 /**
  * Mirror of the backend Media row returned by `/media`. The web composer
  * carries the same shape and forwards it into the post payload as
@@ -24,7 +23,7 @@ export type MediaAsset = {
 
 type MediaListResponse = {
   pages: number;
-  results: Array<{
+  results: {
     id: string;
     name?: string | null;
     originalName?: string | null;
@@ -32,7 +31,7 @@ type MediaListResponse = {
     thumbnail?: string | null;
     alt?: string | null;
     thumbnailTimestamp?: number | null;
-  }>;
+  }[];
 };
 
 const isVideoPath = (path: string) => path.toLowerCase().includes("mp4");
@@ -159,15 +158,9 @@ export const useMediaStore = create<MediaState>((set, get) => ({
     try {
       for (const file of files) {
         const form = new FormData();
-        const name = file.name ?? filenameFromUri(file.uri);
-        const mimeType = file.mimeType ?? guessMimeType(file.uri);
-        // RN's FormData accepts the {uri, name, type} shape; cast keeps TS
-        // happy across web/native FormData typings.
-        form.append("file", {
-          uri: file.uri,
-          name,
-          type: mimeType,
-        } as unknown as Blob);
+        // Expo SDK 58 : le fetch d'Expo n'accepte plus {uri, name, type}.
+        // File (expo-file-system) implémente Blob et lit le fichier local.
+        form.append("file", new ExpoFile(file.uri) as unknown as Blob);
 
         const response = await apiFetch(`/media/upload-simple`, {
           method: "POST",
@@ -176,7 +169,8 @@ export const useMediaStore = create<MediaState>((set, get) => ({
         if (!response.ok) {
           throw new Error(`Upload failed (${response.status})`);
         }
-        const saved = (await response.json()) as MediaListResponse["results"][number];
+        const saved =
+          (await response.json()) as MediaListResponse["results"][number];
         uploaded.push(toAsset(saved));
       }
 
